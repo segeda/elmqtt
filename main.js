@@ -1,5 +1,7 @@
 'use strict';
 
+var elm = Elm.Main.embed(document.getElementById('app'));
+
 var client = mqtt.connect('<MQTT-SERVER>');
 client.subscribe('arduino/yun/time');
 client.subscribe('arduino/yun/humidity');
