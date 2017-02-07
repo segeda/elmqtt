@@ -3,23 +3,22 @@
 var elm = Elm.Main.embed(document.getElementById('app'));
 
 var client = mqtt.connect('<MQTT-SERVER>');
-client.subscribe('arduino/yun/time');
-client.subscribe('arduino/yun/humidity');
-client.subscribe('arduino/yun/temperature');
-client.subscribe('arduino/yun/heatIndex');
+
+var root_topic = 'arduino/yun/';
+client.subscribe(root_topic + '#');
 
 client.on('message', function (topic, payload) {
-    if (topic === "arduino/yun/time") {
+    if (topic === root_topic + 'time') {
         var epoch = new Date(payload * 1000);
         document.getElementById('time').innerText = epoch.toLocaleString();
     }
-    if (topic === "arduino/yun/humidity") {
+    if (topic === root_topic + 'humidity') {
         document.getElementById('humidity').innerText = payload + "%";
     }
-    if (topic === "arduino/yun/temperature") {
+    if (topic === root_topic + 'temperature') {
         document.getElementById('temperature').innerText = payload + "°C";
     }
-    if (topic === "arduino/yun/heatIndex") {
+    if (topic === root_topic + 'heatIndex') {
         document.getElementById('heatIndex').innerText = payload + "°C";
     }
 });
