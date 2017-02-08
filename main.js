@@ -8,10 +8,6 @@ var root_topic = 'arduino/yun/';
 client.subscribe(root_topic + '#');
 
 client.on('message', function (topic, payload) {
-    if (topic === root_topic + 'time') {
-        var epoch = new Date(payload * 1000);
-        document.getElementById('time').innerText = epoch.toLocaleString();
-    }
     if (topic === root_topic + 'humidity') {
         document.getElementById('humidity').innerText = payload + "%";
     }
