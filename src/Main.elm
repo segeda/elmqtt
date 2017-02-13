@@ -1,6 +1,7 @@
 port module Main exposing (main)
 
 import Html exposing (Html, h1, div, dl, dt, dd, text)
+import Html.Attributes exposing (class)
 
 
 main : Program Never Model Msg
@@ -66,23 +67,30 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h1 [] [ text "Elm and MQTT" ]
-        , dl []
-            [ dt [] [ text "humidity" ]
-            , dd []
-                [ text (toString model.humidity)
-                , text "%"
-                ]
-            , dt [] [ text "temperature" ]
-            , dd []
-                [ text (toString model.temperature)
-                , text "°C"
-                ]
-            , dt [] [ text "heatIndex" ]
-            , dd []
-                [ text (toString model.heatIndex)
-                , text "°C"
+    let
+        humidityClass =
+            if (40 <= model.humidity) && (model.humidity <= 60) then
+                "ok"
+            else
+                "bad"
+    in
+        div []
+            [ h1 [] [ text "Elm and MQTT" ]
+            , dl []
+                [ dt [ class humidityClass ] [ text "humidity" ]
+                , dd [ class humidityClass ]
+                    [ text (toString model.humidity)
+                    , text "%"
+                    ]
+                , dt [] [ text "temperature" ]
+                , dd []
+                    [ text (toString model.temperature)
+                    , text "°C"
+                    ]
+                , dt [] [ text "heatIndex" ]
+                , dd []
+                    [ text (toString model.heatIndex)
+                    , text "°C"
+                    ]
                 ]
             ]
-        ]
