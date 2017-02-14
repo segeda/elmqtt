@@ -69,7 +69,7 @@ view : Model -> Html Msg
 view model =
     let
         humidityClass =
-            if (40 <= model.humidity) && (model.humidity <= 60) then
+            if (40 <= model.humidity) && (model.humidity <= 55) then
                 "ok"
             else
                 "bad"
