@@ -20,23 +20,23 @@ main =
 
 loading : String
 loading =
-    "loading"
+    "loading ..."
 
 
 type alias Model =
-    Payload
+    { current : Maybe Payload }
 
 
 type alias Payload =
-    { humidity : Maybe Int
-    , temperature : Maybe Int
-    , heatIndex : Maybe Float
+    { humidity : Int
+    , temperature : Int
+    , heatIndex : Float
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Payload Nothing Nothing Nothing, Cmd.none )
+    ( Model Nothing, Cmd.none )
 
 
 
@@ -51,7 +51,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnMessage payload ->
-            ( payload, Cmd.none )
+            ( Model (Just payload), Cmd.none )
 
 
 
@@ -72,44 +72,40 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    let
-        ( humidityClass, humidity ) =
-            case model.humidity of
-                Just humidity ->
-                    ( if (40 <= humidity) && (humidity <= 55) then
+    div []
+        [ h1 [] [ text "Elm and MQTT" ]
+        , (viewCurrent model.current)
+        ]
+
+
+viewCurrent : Maybe Payload -> Html Msg
+viewCurrent current =
+    case current of
+        Just payload ->
+            let
+                humidityClass =
+                    if (40 <= payload.humidity) && (payload.humidity <= 55) then
                         "ok"
-                      else
+                    else
                         "bad"
-                    , (toString humidity) ++ "%"
-                    )
+            in
+                dl []
+                    [ dt [ class humidityClass ] [ text "humidity" ]
+                    , dd [ class humidityClass ]
+                        [ text (toString payload.humidity)
+                        , text "%"
+                        ]
+                    , dt [] [ text "temperature" ]
+                    , dd []
+                        [ text (toString payload.temperature)
+                        , text "°C"
+                        ]
+                    , dt [] [ text "heatIndex" ]
+                    , dd []
+                        [ text (toString payload.heatIndex)
+                        , text "°C"
+                        ]
+                    ]
 
-                Nothing ->
-                    ( "loading", loading )
-
-        temperature =
-            case model.temperature of
-                Just temperature ->
-                    (toString temperature) ++ "°C"
-
-                Nothing ->
-                    loading
-
-        heatIndex =
-            case model.heatIndex of
-                Just heatIndex ->
-                    (toString heatIndex) ++ "°C"
-
-                Nothing ->
-                    loading
-    in
-        div []
-            [ h1 [] [ text "Elm and MQTT" ]
-            , dl []
-                [ dt [ class humidityClass ] [ text "humidity" ]
-                , dd [ class humidityClass ] [ text humidity ]
-                , dt [] [ text "temperature" ]
-                , dd [] [ text temperature ]
-                , dt [] [ text "heatIndex" ]
-                , dd [] [ text heatIndex ]
-                ]
-            ]
+        Nothing ->
+            div [] [ text loading ]
