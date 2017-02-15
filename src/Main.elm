@@ -18,6 +18,7 @@ main =
 -- MODEL
 
 
+loading : String
 loading =
     "loading"
 
