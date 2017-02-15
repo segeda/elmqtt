@@ -7,5 +7,7 @@ var client = mqtt.connect('<MQTT-SERVER>');
 client.subscribe('arduino/yun');
 
 client.on('message', function (topic, payload) {
-    elm.ports.onMessage.send(JSON.parse(payload));
+    var data = JSON.parse(payload);
+    data.created = Date.now();
+    elm.ports.onMessage.send(data);
 });

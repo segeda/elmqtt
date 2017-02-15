@@ -1,7 +1,9 @@
 port module Main exposing (main)
 
-import Html exposing (Html, h1, div, dl, dt, dd, text)
+import Html exposing (Html, h1, div, dl, dt, dd, ul, li, text)
 import Html.Attributes exposing (class)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (lazy)
 
 
 main : Program Never Model Msg
@@ -24,19 +26,28 @@ loading =
 
 
 type alias Model =
-    { current : Maybe Payload }
+    { current : Maybe Payload
+    , humidityList : List Humidity
+    }
 
 
 type alias Payload =
     { humidity : Int
     , temperature : Int
     , heatIndex : Float
+    , created : Int
+    }
+
+
+type alias Humidity =
+    { created : Int
+    , value : Int
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Nothing, Cmd.none )
+    ( Model Nothing [], Cmd.none )
 
 
 
@@ -51,7 +62,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnMessage payload ->
-            ( Model (Just payload), Cmd.none )
+            ( { model
+                | current = (Just payload)
+                , humidityList = (Humidity payload.created payload.humidity) :: model.humidityList
+              }
+            , Cmd.none
+            )
 
 
 
@@ -75,6 +91,7 @@ view model =
     div []
         [ h1 [] [ text "Elm and MQTT" ]
         , (viewCurrent model.current)
+        , (lazy viewHumidityList model.humidityList)
         ]
 
 
@@ -92,20 +109,33 @@ viewCurrent current =
                 dl []
                     [ dt [ class humidityClass ] [ text "humidity" ]
                     , dd [ class humidityClass ]
-                        [ text (toString payload.humidity)
-                        , text "%"
-                        ]
+                        [ text ((toString payload.humidity) ++ "%") ]
                     , dt [] [ text "temperature" ]
                     , dd []
-                        [ text (toString payload.temperature)
-                        , text "°C"
-                        ]
+                        [ text ((toString payload.temperature) ++ "°C") ]
                     , dt [] [ text "heatIndex" ]
                     , dd []
-                        [ text (toString payload.heatIndex)
-                        , text "°C"
-                        ]
+                        [ text ((toString payload.heatIndex) ++ "°C") ]
                     ]
 
         Nothing ->
             div [] [ text loading ]
+
+
+viewHumidityList : List Humidity -> Html Msg
+viewHumidityList humidityList =
+    if not (List.isEmpty humidityList) then
+        Keyed.node "ul" [] (List.map viewKeyedHumidity humidityList)
+    else
+        text loading
+
+
+viewKeyedHumidity : Humidity -> ( String, Html msg )
+viewKeyedHumidity humidity =
+    ( (toString humidity.created), lazy viewHumidity humidity )
+
+
+viewHumidity : Humidity -> Html msg
+viewHumidity humidity =
+    li []
+        [ text ("[" ++ (toString humidity.created) ++ "] " ++ (toString humidity.value)) ]
