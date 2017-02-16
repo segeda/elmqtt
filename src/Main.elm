@@ -27,7 +27,8 @@ loading =
 
 type alias Model =
     { current : Maybe Payload
-    , humidityList : List Humidity
+    , humidityList : List SensorValue
+    , temperatureList : List SensorValue
     }
 
 
@@ -39,7 +40,7 @@ type alias Payload =
     }
 
 
-type alias Humidity =
+type alias SensorValue =
     { created : Int
     , value : Int
     }
@@ -47,7 +48,7 @@ type alias Humidity =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Nothing [], Cmd.none )
+    ( Model Nothing [] [], Cmd.none )
 
 
 
@@ -64,7 +65,8 @@ update msg model =
         OnMessage payload ->
             ( { model
                 | current = (Just payload)
-                , humidityList = (Humidity payload.created payload.humidity) :: model.humidityList
+                , humidityList = (SensorValue payload.created payload.humidity) :: model.humidityList
+                , temperatureList = (SensorValue payload.created payload.temperature) :: model.temperatureList
               }
             , Cmd.none
             )
@@ -90,8 +92,9 @@ view : Model -> Html Msg
 view model =
     div []
         [ h1 [] [ text "Elm and MQTT" ]
-        , (viewCurrent model.current)
-        , (lazy viewHumidityList model.humidityList)
+        , div [] [ (viewCurrent model.current) ]
+        , div [] [ (lazy viewList model.humidityList) ]
+        , div [] [ (lazy viewList model.temperatureList) ]
         ]
 
 
@@ -122,20 +125,20 @@ viewCurrent current =
             div [] [ text loading ]
 
 
-viewHumidityList : List Humidity -> Html Msg
-viewHumidityList humidityList =
-    if not (List.isEmpty humidityList) then
-        Keyed.node "ul" [] (List.map viewKeyedHumidity humidityList)
+viewList : List SensorValue -> Html Msg
+viewList list =
+    if not (List.isEmpty list) then
+        Keyed.node "ul" [] (List.map viewKeyedSensorValue list)
     else
         text loading
 
 
-viewKeyedHumidity : Humidity -> ( String, Html msg )
-viewKeyedHumidity humidity =
-    ( (toString humidity.created), lazy viewHumidity humidity )
+viewKeyedSensorValue : SensorValue -> ( String, Html msg )
+viewKeyedSensorValue sensorValue =
+    ( (toString sensorValue.created), lazy viewSensorValue sensorValue )
 
 
-viewHumidity : Humidity -> Html msg
-viewHumidity humidity =
+viewSensorValue : SensorValue -> Html msg
+viewSensorValue sensorValue =
     li []
-        [ text ("[" ++ (toString humidity.created) ++ "] " ++ (toString humidity.value)) ]
+        [ text ("[" ++ (toString sensorValue.created) ++ "] " ++ (toString sensorValue.value)) ]
