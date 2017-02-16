@@ -65,8 +65,8 @@ update msg model =
         OnMessage payload ->
             ( { model
                 | current = (Just payload)
-                , humidityList = (SensorValue payload.created payload.humidity) :: model.humidityList
-                , temperatureList = (SensorValue payload.created payload.temperature) :: model.temperatureList
+                , humidityList = (List.take 60 ((SensorValue payload.created payload.humidity) :: model.humidityList))
+                , temperatureList = (List.take 60 ((SensorValue payload.created payload.temperature) :: model.temperatureList))
               }
             , Cmd.none
             )
