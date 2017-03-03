@@ -1,9 +1,12 @@
 port module Main exposing (main)
 
 import Html exposing (Html, h1, div, dl, dt, dd, ul, li, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (style, class)
 import Html.Keyed as Keyed
 import Html.Lazy exposing (lazy)
+import String exposing (join)
+import Svg exposing (Svg, svg, polyline, line)
+import Svg.Attributes exposing (viewBox, width, height, fill, stroke, points, x1, y1, x2, y2)
 
 
 main : Program Never Model Msg
@@ -23,6 +26,16 @@ main =
 loading : String
 loading =
     "loading ..."
+
+
+svgWidth : Int
+svgWidth =
+    600
+
+
+svgHeight : Int
+svgHeight =
+    100
 
 
 type alias Model =
@@ -93,6 +106,7 @@ view model =
     div []
         [ h1 [] [ text "Elm and MQTT" ]
         , div [] [ (viewCurrent model.current) ]
+        , div [] [ (lazy viewSvg model) ]
         , div [] [ (lazy viewList model.humidityList) ]
         , div [] [ (lazy viewList model.temperatureList) ]
         ]
@@ -123,6 +137,27 @@ viewCurrent current =
 
         Nothing ->
             div [] [ text loading ]
+
+
+viewSvg : Model -> Svg Msg
+viewSvg model =
+    svg [ width (toString svgWidth), height (toString svgHeight), viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ) ] ]
+        ((viewSvgPolyline model.humidityList "blue") :: (viewSvgPolyline model.temperatureList "red") :: (viewSvgRaster model))
+
+
+viewSvgRaster : Model -> List (Svg Msg)
+viewSvgRaster model =
+    (List.map viewSvgRasterLine (List.range 1 9))
+
+
+viewSvgRasterLine : Int -> Svg Msg
+viewSvgRasterLine i =
+    line [ fill "none", stroke "#dcdcdc", x1 "0", y1 (toString (i * 10)), x2 (toString svgWidth), y2 (toString (i * 10)) ] []
+
+
+viewSvgPolyline : List SensorValue -> String -> Svg Msg
+viewSvgPolyline list color =
+    polyline [ fill "none", stroke color, points (join " " (List.indexedMap (\a b -> ((toString (svgWidth - (a * 10))) ++ "," ++ (toString (svgHeight - b.value)))) list)) ] []
 
 
 viewList : List SensorValue -> Html Msg
