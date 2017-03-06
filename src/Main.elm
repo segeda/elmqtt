@@ -138,7 +138,7 @@ viewCurrent current =
 
 viewSvg : List SensorValue -> List SensorValue -> Svg Msg
 viewSvg humidityList temperatureList =
-    svg [ viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ) ] ]
+    svg [ viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ), ( "height", "100%" ) ] ]
         ((viewSvgPolyline humidityList "blue") :: (viewSvgPolyline temperatureList "red") :: viewSvgRaster)
 
 
