@@ -1,12 +1,11 @@
 port module Main exposing (main)
 
-import Html exposing (Html, h1, div, dl, dt, dd, ul, li, text)
+import Html exposing (Html, h1, div, dl, dt, dd, text)
 import Html.Attributes exposing (style, class)
-import Html.Keyed as Keyed
-import Html.Lazy exposing (lazy)
 import String exposing (join)
 import Svg exposing (Svg, svg, polyline, line)
 import Svg.Attributes exposing (viewBox, fill, stroke, points, x1, y1, x2, y2)
+import Svg.Lazy exposing (lazy2)
 
 
 main : Program Never Model Msg
@@ -106,9 +105,7 @@ view model =
     div []
         [ h1 [] [ text "Elm and MQTT" ]
         , div [] [ (viewCurrent model.current) ]
-        , div [] [ (lazy viewSvg model) ]
-        , div [] [ (lazy viewList model.humidityList) ]
-        , div [] [ (lazy viewList model.temperatureList) ]
+        , div [] [ (lazy2 viewSvg model.humidityList model.temperatureList) ]
         ]
 
 
@@ -139,14 +136,14 @@ viewCurrent current =
             div [] [ text loading ]
 
 
-viewSvg : Model -> Svg Msg
-viewSvg model =
+viewSvg : List SensorValue -> List SensorValue -> Svg Msg
+viewSvg humidityList temperatureList =
     svg [ viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ) ] ]
-        ((viewSvgPolyline model.humidityList "blue") :: (viewSvgPolyline model.temperatureList "red") :: (viewSvgRaster model))
+        ((viewSvgPolyline humidityList "blue") :: (viewSvgPolyline temperatureList "red") :: viewSvgRaster)
 
 
-viewSvgRaster : Model -> List (Svg Msg)
-viewSvgRaster model =
+viewSvgRaster : List (Svg Msg)
+viewSvgRaster =
     (List.map viewSvgRasterLine (List.range 1 9))
 
 
@@ -158,22 +155,3 @@ viewSvgRasterLine i =
 viewSvgPolyline : List SensorValue -> String -> Svg Msg
 viewSvgPolyline list color =
     polyline [ fill "none", stroke color, points (join " " (List.indexedMap (\a b -> ((toString (svgWidth - (a * 10))) ++ "," ++ (toString (svgHeight - b.value)))) list)) ] []
-
-
-viewList : List SensorValue -> Html Msg
-viewList list =
-    if not (List.isEmpty list) then
-        Keyed.node "ul" [] (List.map viewKeyedSensorValue list)
-    else
-        text loading
-
-
-viewKeyedSensorValue : SensorValue -> ( String, Html msg )
-viewKeyedSensorValue sensorValue =
-    ( (toString sensorValue.created), lazy viewSensorValue sensorValue )
-
-
-viewSensorValue : SensorValue -> Html msg
-viewSensorValue sensorValue =
-    li []
-        [ text ("[" ++ (toString sensorValue.created) ++ "] " ++ (toString sensorValue.value)) ]
