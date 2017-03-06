@@ -6,7 +6,7 @@ import Html.Keyed as Keyed
 import Html.Lazy exposing (lazy)
 import String exposing (join)
 import Svg exposing (Svg, svg, polyline, line)
-import Svg.Attributes exposing (viewBox, width, height, fill, stroke, points, x1, y1, x2, y2)
+import Svg.Attributes exposing (viewBox, fill, stroke, points, x1, y1, x2, y2)
 
 
 main : Program Never Model Msg
@@ -30,7 +30,7 @@ loading =
 
 svgWidth : Int
 svgWidth =
-    600
+    590
 
 
 svgHeight : Int
@@ -141,7 +141,7 @@ viewCurrent current =
 
 viewSvg : Model -> Svg Msg
 viewSvg model =
-    svg [ width (toString svgWidth), height (toString svgHeight), viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ) ] ]
+    svg [ viewBox (join " " [ "0", "0", (toString svgWidth), (toString svgHeight) ]), style [ ( "background-color", "#f8f8ff" ) ] ]
         ((viewSvgPolyline model.humidityList "blue") :: (viewSvgPolyline model.temperatureList "red") :: (viewSvgRaster model))
 
 
